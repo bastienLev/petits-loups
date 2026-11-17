@@ -241,6 +241,7 @@
 
   function afficher(etape) {
     arreterTousLesSons();
+    if (window.PetitsLoups && window.PetitsLoups.quandOnQuitte) { window.PetitsLoups.quandOnQuitte(); }
     tous('.vue').forEach(function (v) { v.className = 'vue'; });
     if (etape.preparer) { etape.preparer(); }
     var vue = $('vue-' + etape.vue);
@@ -555,5 +556,5 @@
   verifier();
 
   // Accès pour les tests.
-  window.PetitsLoups = { aller: aller, ouvrirListe: ouvrirListe, ouvrirChanson: ouvrirChanson, ouvrirHistoire: ouvrirHistoire, arreterTousLesSons: arreterTousLesSons };
+  window.PetitsLoups = { note: note, preparerAudio: preparerAudio, maintenant: function () { return audio ? audio.currentTime : 0; }, aller: aller, ouvrirListe: ouvrirListe, ouvrirChanson: ouvrirChanson, ouvrirHistoire: ouvrirHistoire, arreterTousLesSons: arreterTousLesSons };
 })();

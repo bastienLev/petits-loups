@@ -130,3 +130,40 @@ body.nuit { background: #1c1b3a; color: #e5dbff; }
 body.nuit .tuile, body.nuit .retour, body.nuit .gros-bouton { background: #2e2b5c; box-shadow: 0 6px 0 rgba(0,0,0,0.35); }
 body.nuit .scene { opacity: 0.85; }
 body.nuit #bouton-parent { background: rgba(255,255,255,0.15); }
+
+/* Jeux */
+#jeu-zone { position: absolute; left: 0; right: 0; top: 110px; bottom: 0; overflow: hidden; }
+.carte-memory {
+  position: absolute; border-radius: 24px; background: #9775fa;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.15); padding: 0;
+}
+.carte-memory span { visibility: hidden; }
+.carte-memory.ouverte { background: #fff; }
+.carte-memory.ouverte span { visibility: visible; }
+.carte-memory.trouvee { background: #d3f9d8; }
+.ombre, .piece-ombre, .acteur {
+  position: absolute; width: 120px; height: 120px; font-size: 96px; line-height: 120px; text-align: center;
+}
+.ombre { -webkit-filter: brightness(0); filter: brightness(0); opacity: 0.25; }
+.ombre.remplie { opacity: 0; }
+.piece-ombre { z-index: 3; }
+.tenue { z-index: 5; -webkit-transform: scale(1.15); transform: scale(1.15); }
+.retour-anime { -webkit-transition: left 0.3s, top 0.3s; transition: left 0.3s, top 0.3s; }
+.panier {
+  position: absolute; width: 200px; height: 190px; border: 8px solid; border-radius: 30px;
+}
+.forme { position: absolute; width: 90px; height: 90px; z-index: 3; box-shadow: 0 5px 0 rgba(0,0,0,0.15); }
+.forme.rond { border-radius: 45px; }
+.forme.carre { border-radius: 12px; }
+.forme.goutte { border-radius: 45px 45px 45px 6px; }
+.forme.rangee { width: 70px; height: 50px; box-shadow: none; }
+.toile { position: absolute; left: 0; top: 0; }
+.acteur { width: 80px; height: 80px; font-size: 64px; line-height: 80px; z-index: 3; pointer-events: none; }
+.bravo {
+  position: absolute; left: 50%; top: 50%; width: 400px; height: 300px; margin: -150px 0 0 -200px;
+  background: #fff; border-radius: 40px; box-shadow: 0 10px 0 rgba(0,0,0,0.15);
+  font-size: 64px; font-weight: bold; color: #e8590c; text-align: center; padding-top: 50px; z-index: 8;
+  -webkit-animation: saute 0.5s; animation: saute 0.5s;
+}
+@-webkit-keyframes saute { 0% { -webkit-transform: scale(0.3); } 70% { -webkit-transform: scale(1.1); } 100% { -webkit-transform: scale(1); } }
+@keyframes saute { 0% { transform: scale(0.3); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }

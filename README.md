@@ -15,6 +15,10 @@ Site pour enfants (comptines, histoires, petits jeux) pensé pour un vieil.
 - **Dodo** : écran sombre, voix et musique plus lentes, l'histoire se lit toute seule puis un écran « Bonne nuit » s'affiche (le parent le ferme avec le cadenas).
 - Tout le contenu est dans `js/contenu.js`.
 
+## Jeux du grand (étape 3)
+
+Dans `js/jeux.js` : Memory (3, 4 puis 6 paires), Les ombres (glisser chaque objet sur son ombre), Les couleurs (ranger les formes dans le panier de la même couleur), Le chemin (guider l'abeille jusqu'à la fleur avec le doigt). Chaque réussite affiche « Bravo ! » et la manche suivante est un peu plus difficile.
+
 ## Installer sur l'iPad
 
 1. Ouvrir l'adresse du site dans Safari.
