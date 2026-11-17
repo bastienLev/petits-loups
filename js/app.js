@@ -94,6 +94,67 @@
     return notes;
   }
 
+  /* ---------- Accompagnement : basse, accords et petit rythme ---------- */
+  var DEMI_TONS = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  function noteMidi(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  // Son doux et rond (piano feutré) pour les accords.
+  function doux(freq, t, duree, volume) {
+    if (!audio || sonCoupe) { return; }
+    var osc = audio.createOscillator();
+    var gain = audio.createGain ? audio.createGain() : audio.createGainNode();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(volume, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+    osc.connect(gain);
+    gain.connect(audio.destination);
+    if (osc.start) { osc.start(t); osc.stop(t + duree + 0.05); }
+    else { osc.noteOn(t); osc.noteOff(t + duree + 0.05); }
+    sonsActifs.push(osc);
+  }
+
+  // Petit « tchik » de maracas pour marquer le rythme.
+  var bruit = null;
+  function tchik(t, volume) {
+    if (!audio || sonCoupe) { return; }
+    if (!bruit) {
+      bruit = audio.createBuffer(1, Math.floor(audio.sampleRate * 0.08), audio.sampleRate);
+      var d = bruit.getChannelData(0);
+      for (var i = 0; i < d.length; i++) { d[i] = (Math.random() * 2 - 1) * (1 - i / d.length); }
+    }
+    var src = audio.createBufferSource();
+    var filtre = audio.createBiquadFilter();
+    var gain = audio.createGain ? audio.createGain() : audio.createGainNode();
+    src.buffer = bruit;
+    try { filtre.type = 'highpass'; } catch (e) { filtre.type = 1; }
+    filtre.frequency.value = 5000;
+    gain.gain.value = volume;
+    src.connect(filtre); filtre.connect(gain); gain.connect(audio.destination);
+    if (src.start) { src.start(t); } else { src.noteOn(t); }
+    sonsActifs.push(src);
+  }
+
+  // "C 4 G 4" : accord de do pendant 4 temps, puis sol pendant 4 temps.
+  function accompagner(accords, t, temps, nuit) {
+    var m = (accords || '').split(/\s+/), i, b;
+    for (i = 0; i + 1 < m.length; i += 2) {
+      var nom = m[i], duree = parseFloat(m[i + 1]);
+      var mineur = nom.charAt(nom.length - 1) === 'm';
+      var racine = 48 + DEMI_TONS[nom.charAt(0)] + (nom.charAt(1) === '#' ? 1 : (nom.charAt(1) === 'b' ? -1 : 0));
+      var tierce = racine + (mineur ? 3 : 4), quinte = racine + 7;
+      for (b = 0; b < duree; b++) {
+        var tb = t + b * temps;
+        if (b === 0) { doux(noteMidi(racine - 12), tb, temps * 1.8, nuit ? 0.12 : 0.18); }
+        else if (b % 2 === 1) { doux(noteMidi(quinte), tb, temps * 0.9, nuit ? 0.05 : 0.07); doux(noteMidi(tierce + 12), tb, temps * 0.9, nuit ? 0.04 : 0.06); }
+        else { doux(noteMidi(racine), tb, temps * 0.9, nuit ? 0.06 : 0.09); }
+        if (!nuit) { tchik(tb + (b % 2 ? 0 : temps / 2), 0.05); }
+      }
+      t += duree * temps;
+    }
+  }
+
   /* ---------- Voix de l'iPad (synthèse vocale) ---------- */
   var synthese = window.speechSynthesis;
   var phraseEnCours = null; // garder une référence : sinon iOS peut oublier le « fini »
@@ -125,6 +186,39 @@
     u.onend = fini;
     phraseEnCours = u;
     synthese.speak(u);
+  }
+
+  /* ---------- Voix enregistrées (fichiers MP3, plus douces que la voix de l'iPad) ---------- */
+  var lecteur = document.createElement('audio');
+  lecteur.preload = 'auto';
+  document.body.appendChild(lecteur);
+  var lecteurDebloque = false;
+  // iOS n'autorise la lecture qu'après un geste : on « débloque » le lecteur au premier toucher.
+  function debloquerLecteur() {
+    if (lecteurDebloque) { return; }
+    lecteurDebloque = true;
+    try { lecteur.load(); } catch (e) {}
+  }
+  document.addEventListener('touchend', debloquerLecteur, false);
+
+  // Joue un fichier ; si le fichier manque, on se rabat sur la voix de l'iPad.
+  function dire(fichier, phrase, langue, vitesse, ensuite) {
+    if (!CONTENU.voixEnregistrees || !fichier) { parler(phrase, langue, vitesse, ensuite); return; }
+    var maLecture = lecture, fait = false;
+    function fini() {
+      if (fait || maLecture !== lecture) { return; }
+      fait = true;
+      if (ensuite) { ensuite(); }
+    }
+    lecteur.onended = fini;
+    lecteur.onerror = function () {
+      if (fait || maLecture !== lecture) { return; }
+      fait = true;
+      parler(phrase, langue, vitesse, ensuite);
+    };
+    if (sonCoupe) { return; }
+    lecteur.src = fichier;
+    try { lecteur.play(); } catch (e) { lecteur.onerror(); }
   }
 
   function arreterTousLesSons() {
@@ -251,7 +345,7 @@
       var suivante = function (i) {
         if (i >= c.lignes.length) { chansonTerminee(); return; }
         montrerLigne(c, i);
-        parler(c.lignes[i][0], c.langue, vitesse, function () { plusTard(function () { suivante(i + 1); }, 400); });
+        dire('audio/chansons/' + c.id + '-' + (i + 1) + '.mp3', c.lignes[i][0], c.langue, vitesse, function () { plusTard(function () { suivante(i + 1); }, 400); });
       };
       suivante(0);
       return;
@@ -262,6 +356,7 @@
     c.lignes.forEach(function (ligne, i) {
       var depart = t;
       plusTard(function () { montrerLigne(c, i); }, (depart - audio.currentTime) * 1000);
+      if (ligne[3]) { accompagner(ligne[3], t, temps, modeNuit); }
       lireMelodie(ligne[1]).forEach(function (n) {
         note(n.f, t, n.d * temps, modeNuit ? 0.22 : 0.35);
         t += n.d * temps;
@@ -290,7 +385,7 @@
     var h = histoireCourante;
     arreterTousLesSons();
     montrerPage();
-    parler(h.pages[pageCourante][1], 'fr-FR', modeNuit ? 0.75 : 0.9, function () {
+    dire('audio/histoires/' + h.id + '-' + (pageCourante + 1) + '.mp3', h.pages[pageCourante][1], 'fr-FR', modeNuit ? 0.75 : 0.9, function () {
       if (!lectureAuto) { return; }
       if (pageCourante < h.pages.length - 1) {
         plusTard(function () { pageCourante++; lirePage(); }, modeNuit ? 2000 : 1200);

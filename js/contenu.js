@@ -5,9 +5,13 @@
  * Mélodies : une ligne de paroles = une suite « Note Durée » (durée en temps).
  * Exemple : "C4 1 D4 0.5" = do (1 temps) puis ré (un demi-temps).
  * Une ligne sans mélodie est lue à voix haute par l'iPad.
+ * 4e élément (optionnel) : accords d'accompagnement, ex. "C 4 G 4" (accord, durée en temps).
  * Pour ajouter un enregistrement : mettre le fichier dans audio/ et renseigner « audio ».
  */
 var CONTENU = {};
+
+// true quand les fichiers audio/ (voix naturelles) sont présents.
+CONTENU.voixEnregistrees = false;
 
 CONTENU.chansons = [
   /* ----- Comptines françaises ----- */
@@ -48,23 +52,23 @@ CONTENU.chansons = [
   {
     id: 'frere-jacques', titre: 'Frère Jacques', emoji: '🔔', groupe: 'fr', langue: 'fr-FR', tempo: 110,
     lignes: [
-      ['Frère Jacques, frère Jacques,', 'C4 1 D4 1 E4 1 C4 1 C4 1 D4 1 E4 1 C4 1', '😴'],
-      ['Dormez-vous ? Dormez-vous ?', 'E4 1 F4 1 G4 2 E4 1 F4 1 G4 2', '😴'],
-      ['Sonnez les matines, sonnez les matines,', 'G4 0.5 A4 0.5 G4 0.5 F4 0.5 E4 1 C4 1 G4 0.5 A4 0.5 G4 0.5 F4 0.5 E4 1 C4 1', '🔔'],
-      ['Ding, dang, dong ! Ding, dang, dong !', 'C4 1 G3 1 C4 2 C4 1 G3 1 C4 2', '🔔']
+      ['Frère Jacques, frère Jacques,', 'C4 1 D4 1 E4 1 C4 1 C4 1 D4 1 E4 1 C4 1', '😴', 'C 8'],
+      ['Dormez-vous ? Dormez-vous ?', 'E4 1 F4 1 G4 2 E4 1 F4 1 G4 2', '😴', 'C 8'],
+      ['Sonnez les matines, sonnez les matines,', 'G4 0.5 A4 0.5 G4 0.5 F4 0.5 E4 1 C4 1 G4 0.5 A4 0.5 G4 0.5 F4 0.5 E4 1 C4 1', '🔔', 'C 8'],
+      ['Ding, dang, dong ! Ding, dang, dong !', 'C4 1 G3 1 C4 2 C4 1 G3 1 C4 2', '🔔', 'C 8']
     ]
   },
   {
     id: 'clair-lune', titre: 'Au clair de la lune', emoji: '🌙', groupe: 'fr', dodo: true, langue: 'fr-FR', tempo: 96,
     lignes: [
-      ['Au clair de la lune,', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '🌙'],
-      ['Mon ami Pierrot,', 'C4 1 E4 1 D4 1 D4 1 C4 4', '😊'],
-      ['Prête-moi ta plume', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '✏️'],
-      ['Pour écrire un mot.', 'C4 1 E4 1 D4 1 D4 1 C4 4', '✉️'],
-      ['Ma chandelle est morte,', 'D4 1 D4 1 D4 1 D4 1 A3 2 A3 2', '💡'],
-      ['Je n\'ai plus de feu.', 'D4 1 C4 1 B3 1 A3 1 G3 4', '🌑'],
-      ['Ouvre-moi ta porte', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '🚪'],
-      ['Pour l\'amour de Dieu.', 'C4 1 E4 1 D4 1 D4 1 C4 4', '⭐']
+      ['Au clair de la lune,', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '🌙', 'C 4 G 4'],
+      ['Mon ami Pierrot,', 'C4 1 E4 1 D4 1 D4 1 C4 4', '😊', 'C 2 G 2 C 4'],
+      ['Prête-moi ta plume', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '✏️', 'C 4 G 4'],
+      ['Pour écrire un mot.', 'C4 1 E4 1 D4 1 D4 1 C4 4', '✉️', 'C 2 G 2 C 4'],
+      ['Ma chandelle est morte,', 'D4 1 D4 1 D4 1 D4 1 A3 2 A3 2', '💡', 'G 4 Am 4'],
+      ['Je n\'ai plus de feu.', 'D4 1 C4 1 B3 1 A3 1 G3 4', '🌑', 'G 8'],
+      ['Ouvre-moi ta porte', 'C4 1 C4 1 C4 1 D4 1 E4 2 D4 2', '🚪', 'C 4 G 4'],
+      ['Pour l\'amour de Dieu.', 'C4 1 E4 1 D4 1 D4 1 C4 4', '⭐', 'C 2 G 2 C 4']
     ]
   },
 
@@ -72,56 +76,56 @@ CONTENU.chansons = [
   {
     id: 'jingle-bells', titre: 'Jingle Bells', emoji: '🔔', groupe: 'noel', langue: 'en-US', tempo: 130,
     lignes: [
-      ['Jingle bells, jingle bells,', 'E4 1 E4 1 E4 2 E4 1 E4 1 E4 2', '🔔'],
-      ['Jingle all the way!', 'E4 1 G4 1 C4 1.5 D4 0.5 E4 4', '🎅'],
-      ['Oh what fun it is to ride in a', 'F4 1 F4 1 F4 1.5 F4 0.5 F4 1 E4 1 E4 1 E4 0.5 E4 0.5', '🐴'],
-      ['one-horse open sleigh, hey!', 'E4 1 D4 1 D4 1 E4 1 D4 2 G4 2', '❄️'],
-      ['Jingle bells, jingle bells,', 'E4 1 E4 1 E4 2 E4 1 E4 1 E4 2', '🔔'],
-      ['Jingle all the way!', 'E4 1 G4 1 C4 1.5 D4 0.5 E4 4', '🎅'],
-      ['Oh what fun it is to ride in a', 'F4 1 F4 1 F4 1.5 F4 0.5 F4 1 E4 1 E4 1 E4 0.5 E4 0.5', '🐴'],
-      ['one-horse open sleigh!', 'G4 1 G4 1 F4 1 D4 1 C4 4', '🎄']
+      ['Jingle bells, jingle bells,', 'E4 1 E4 1 E4 2 E4 1 E4 1 E4 2', '🔔', 'C 8'],
+      ['Jingle all the way!', 'E4 1 G4 1 C4 1.5 D4 0.5 E4 4', '🎅', 'C 8'],
+      ['Oh what fun it is to ride in a', 'F4 1 F4 1 F4 1.5 F4 0.5 F4 1 E4 1 E4 1 E4 0.5 E4 0.5', '🐴', 'F 4 C 4'],
+      ['one-horse open sleigh, hey!', 'E4 1 D4 1 D4 1 E4 1 D4 2 G4 2', '❄️', 'D 4 G 4'],
+      ['Jingle bells, jingle bells,', 'E4 1 E4 1 E4 2 E4 1 E4 1 E4 2', '🔔', 'C 8'],
+      ['Jingle all the way!', 'E4 1 G4 1 C4 1.5 D4 0.5 E4 4', '🎅', 'C 8'],
+      ['Oh what fun it is to ride in a', 'F4 1 F4 1 F4 1.5 F4 0.5 F4 1 E4 1 E4 1 E4 0.5 E4 0.5', '🐴', 'F 4 C 4'],
+      ['one-horse open sleigh!', 'G4 1 G4 1 F4 1 D4 1 C4 4', '🎄', 'G 4 C 4']
     ]
   },
   {
     id: 'we-wish-you', titre: 'We Wish You a Merry Christmas', emoji: '🎄', groupe: 'noel', langue: 'en-US', tempo: 150,
     lignes: [
-      ['We wish you a Merry Christmas,', 'D4 1 G4 1 G4 0.5 A4 0.5 G4 0.5 F#4 0.5 E4 1 E4 1', '🎄'],
-      ['We wish you a Merry Christmas,', 'E4 1 A4 1 A4 0.5 B4 0.5 A4 0.5 G4 0.5 F#4 1 D4 1', '🎁'],
-      ['We wish you a Merry Christmas,', 'D4 1 B4 1 B4 0.5 C5 0.5 B4 0.5 A4 0.5 G4 1 E4 1', '🎅'],
-      ['And a Happy New Year!', 'D4 0.5 D4 0.5 E4 1 A4 1 F#4 1 G4 3', '⭐']
+      ['We wish you a Merry Christmas,', 'D4 1 G4 1 G4 0.5 A4 0.5 G4 0.5 F#4 0.5 E4 1 E4 1', '🎄', 'G 3 C 3'],
+      ['We wish you a Merry Christmas,', 'E4 1 A4 1 A4 0.5 B4 0.5 A4 0.5 G4 0.5 F#4 1 D4 1', '🎁', 'A 3 D 3'],
+      ['We wish you a Merry Christmas,', 'D4 1 B4 1 B4 0.5 C5 0.5 B4 0.5 A4 0.5 G4 1 E4 1', '🎅', 'B 3 Em 3'],
+      ['And a Happy New Year!', 'D4 0.5 D4 0.5 E4 1 A4 1 F#4 1 G4 3', '⭐', 'C 2 D 2 G 3']
     ]
   },
   {
     id: 'deck-the-halls', titre: 'Deck the Halls', emoji: '🎁', groupe: 'noel', langue: 'en-US', tempo: 130,
     lignes: [
-      ['Deck the halls with boughs of holly,', 'G4 1.5 F4 0.5 E4 1 D4 1 C4 1 D4 1 E4 1 C4 1', '🎄'],
-      ['Fa la la la la, la la la la!', 'D4 0.5 E4 0.5 F4 0.5 D4 0.5 E4 1.5 D4 0.5 C4 1 B3 1 C4 2', '🎶'],
-      ['\'Tis the season to be jolly,', 'G4 1.5 F4 0.5 E4 1 D4 1 C4 1 D4 1 E4 1 C4 1', '😊'],
-      ['Fa la la la la, la la la la!', 'D4 0.5 E4 0.5 F4 0.5 D4 0.5 E4 1.5 D4 0.5 C4 1 B3 1 C4 2', '🎶']
+      ['Deck the halls with boughs of holly,', 'G4 1.5 F4 0.5 E4 1 D4 1 C4 1 D4 1 E4 1 C4 1', '🎄', 'C 6 G 1 C 1'],
+      ['Fa la la la la, la la la la!', 'D4 0.5 E4 0.5 F4 0.5 D4 0.5 E4 1.5 D4 0.5 C4 1 B3 1 C4 2', '🎶', 'G 2 C 2 F 1 G 1 C 2'],
+      ['\'Tis the season to be jolly,', 'G4 1.5 F4 0.5 E4 1 D4 1 C4 1 D4 1 E4 1 C4 1', '😊', 'C 6 G 1 C 1'],
+      ['Fa la la la la, la la la la!', 'D4 0.5 E4 0.5 F4 0.5 D4 0.5 E4 1.5 D4 0.5 C4 1 B3 1 C4 2', '🎶', 'G 2 C 2 F 1 G 1 C 2']
     ]
   },
   {
     id: 'silent-night', titre: 'Silent Night', emoji: '⭐', groupe: 'noel', dodo: true, langue: 'en-US', tempo: 120,
     lignes: [
-      ['Silent night,', 'G4 1.5 A4 0.5 G4 1 E4 3', '🌙'],
-      ['Holy night,', 'G4 1.5 A4 0.5 G4 1 E4 3', '⭐'],
-      ['All is calm,', 'D5 2 D5 1 B4 3', '❄️'],
-      ['All is bright,', 'C5 2 C5 1 G4 3', '✨'],
-      ['Round yon Virgin, Mother and Child,', 'A4 2 A4 1 C5 1.5 B4 0.5 A4 1 G4 1.5 A4 0.5 G4 1 E4 3', '👶'],
-      ['Holy Infant so tender and mild,', 'A4 2 A4 1 C5 1.5 B4 0.5 A4 1 G4 1.5 A4 0.5 G4 1 E4 3', '💛'],
-      ['Sleep in heavenly peace,', 'D5 2 D5 1 F5 1.5 D5 0.5 B4 1 C5 3 E5 3', '😴'],
-      ['Sleep in heavenly peace.', 'C5 1 G4 1 E4 1 G4 1.5 F4 0.5 D4 1 C4 6', '🌙']
+      ['Silent night,', 'G4 1.5 A4 0.5 G4 1 E4 3', '🌙', 'C 6'],
+      ['Holy night,', 'G4 1.5 A4 0.5 G4 1 E4 3', '⭐', 'C 6'],
+      ['All is calm,', 'D5 2 D5 1 B4 3', '❄️', 'G 6'],
+      ['All is bright,', 'C5 2 C5 1 G4 3', '✨', 'C 6'],
+      ['Round yon Virgin, Mother and Child,', 'A4 2 A4 1 C5 1.5 B4 0.5 A4 1 G4 1.5 A4 0.5 G4 1 E4 3', '👶', 'F 6 C 6'],
+      ['Holy Infant so tender and mild,', 'A4 2 A4 1 C5 1.5 B4 0.5 A4 1 G4 1.5 A4 0.5 G4 1 E4 3', '💛', 'F 6 C 6'],
+      ['Sleep in heavenly peace,', 'D5 2 D5 1 F5 1.5 D5 0.5 B4 1 C5 3 E5 3', '😴', 'G 6 C 6'],
+      ['Sleep in heavenly peace.', 'C5 1 G4 1 E4 1 G4 1.5 F4 0.5 D4 1 C4 6', '🌙', 'C 3 G 3 C 6']
     ]
   },
   {
     id: 'twinkle', titre: 'Twinkle, Twinkle, Little Star', emoji: '✨', groupe: 'noel', dodo: true, langue: 'en-US', tempo: 96,
     lignes: [
-      ['Twinkle, twinkle, little star,', 'C4 1 C4 1 G4 1 G4 1 A4 1 A4 1 G4 2', '⭐'],
-      ['How I wonder what you are!', 'F4 1 F4 1 E4 1 E4 1 D4 1 D4 1 C4 2', '✨'],
-      ['Up above the world so high,', 'G4 1 G4 1 F4 1 F4 1 E4 1 E4 1 D4 2', '🌍'],
-      ['Like a diamond in the sky.', 'G4 1 G4 1 F4 1 F4 1 E4 1 E4 1 D4 2', '💎'],
-      ['Twinkle, twinkle, little star,', 'C4 1 C4 1 G4 1 G4 1 A4 1 A4 1 G4 2', '⭐'],
-      ['How I wonder what you are!', 'F4 1 F4 1 E4 1 E4 1 D4 1 D4 1 C4 2', '🌙']
+      ['Twinkle, twinkle, little star,', 'C4 1 C4 1 G4 1 G4 1 A4 1 A4 1 G4 2', '⭐', 'C 4 F 2 C 2'],
+      ['How I wonder what you are!', 'F4 1 F4 1 E4 1 E4 1 D4 1 D4 1 C4 2', '✨', 'F 2 C 2 G 2 C 2'],
+      ['Up above the world so high,', 'G4 1 G4 1 F4 1 F4 1 E4 1 E4 1 D4 2', '🌍', 'C 2 F 2 C 2 G 2'],
+      ['Like a diamond in the sky.', 'G4 1 G4 1 F4 1 F4 1 E4 1 E4 1 D4 2', '💎', 'C 2 F 2 C 2 G 2'],
+      ['Twinkle, twinkle, little star,', 'C4 1 C4 1 G4 1 G4 1 A4 1 A4 1 G4 2', '⭐', 'C 4 F 2 C 2'],
+      ['How I wonder what you are!', 'F4 1 F4 1 E4 1 E4 1 D4 1 D4 1 C4 2', '🌙', 'F 2 C 2 G 2 C 2']
     ]
   },
 
@@ -129,14 +133,14 @@ CONTENU.chansons = [
   {
     id: 'brahms', titre: 'Berceuse de Brahms', emoji: '🌛', groupe: 'dodo', dodo: true, langue: 'fr-FR', tempo: 84,
     lignes: [
-      ['🎶', 'E4 0.5 E4 0.5 G4 2 E4 0.5 E4 0.5 G4 2', '🌛'],
-      ['🎶', 'E4 0.5 G4 0.5 C5 1 B4 1.5 A4 0.5 A4 1 G4 1', '⭐'],
-      ['🎶', 'D4 0.5 E4 0.5 F4 1 D4 1 D4 0.5 E4 0.5 F4 2', '✨'],
-      ['🎶', 'D4 0.5 F4 0.5 B4 0.5 A4 0.5 G4 1 B4 1 C5 2', '🌙'],
-      ['🎶', 'C4 0.5 C4 0.5 C5 2 A4 0.5 F4 0.5 G4 2', '⭐'],
-      ['🎶', 'E4 0.5 C4 0.5 F4 1 G4 1 A4 1 G4 2', '✨'],
-      ['🎶', 'C4 0.5 C4 0.5 C5 2 A4 0.5 F4 0.5 G4 2', '🌛'],
-      ['🎶', 'E4 0.5 C4 0.5 F4 1 E4 1 D4 1 C4 3', '😴']
+      ['🎶', 'E4 0.5 E4 0.5 G4 2 E4 0.5 E4 0.5 G4 2', '🌛', 'C 6'],
+      ['🎶', 'E4 0.5 G4 0.5 C5 1 B4 1.5 A4 0.5 A4 1 G4 1', '⭐', 'C 3 G 3'],
+      ['🎶', 'D4 0.5 E4 0.5 F4 1 D4 1 D4 0.5 E4 0.5 F4 2', '✨', 'G 6'],
+      ['🎶', 'D4 0.5 F4 0.5 B4 0.5 A4 0.5 G4 1 B4 1 C5 2', '🌙', 'G 3 C 3'],
+      ['🎶', 'C4 0.5 C4 0.5 C5 2 A4 0.5 F4 0.5 G4 2', '⭐', 'C 3 F 3'],
+      ['🎶', 'E4 0.5 C4 0.5 F4 1 G4 1 A4 1 G4 2', '✨', 'F 3 C 3'],
+      ['🎶', 'C4 0.5 C4 0.5 C5 2 A4 0.5 F4 0.5 G4 2', '🌛', 'C 3 F 3'],
+      ['🎶', 'E4 0.5 C4 0.5 F4 1 E4 1 D4 1 C4 3', '😴', 'C 1 G 3 C 3']
     ]
   }
 ];

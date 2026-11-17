@@ -6,7 +6,7 @@ Usage :  pip install edge-tts
 import asyncio, json, os, sys
 import edge_tts
 
-VOIX = "fr-FR-DeniseNeural"
+VOIX = "fr-FR-VivienneMultilingualNeural"
 VITESSE = "-12%"
 
 async def main(manifeste, sortie):
