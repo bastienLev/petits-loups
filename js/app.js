@@ -358,7 +358,7 @@
       plusTard(function () { montrerLigne(c, i); }, (depart - audio.currentTime) * 1000);
       if (ligne[3]) { accompagner(ligne[3], t, temps, modeNuit); }
       lireMelodie(ligne[1]).forEach(function (n) {
-        note(n.f, t, n.d * temps, modeNuit ? 0.22 : 0.35);
+        if (n.f > 0) { note(n.f, t, n.d * temps, modeNuit ? 0.22 : 0.35); }
         t += n.d * temps;
       });
     });

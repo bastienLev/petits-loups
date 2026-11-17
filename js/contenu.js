@@ -16,37 +16,37 @@ CONTENU.voixEnregistrees = false;
 CONTENU.chansons = [
   /* ----- Comptines françaises ----- */
   {
-    id: 'escargot', titre: 'Petit escargot', emoji: '🐌', groupe: 'fr', langue: 'fr-FR',
+    id: 'escargot', titre: 'Petit escargot', emoji: '🐌', groupe: 'fr', langue: 'fr-FR', tempo: 100,
     lignes: [
-      ['Petit escargot', '', '🐌'],
-      ['Porte sur son dos', '', '🐌'],
-      ['Sa maisonnette.', '', '🏠'],
-      ['Aussitôt qu\'il pleut,', '', '☔'],
-      ['Il est tout heureux,', '', '😊'],
-      ['Il sort sa tête !', '', '🐌']
+      ['Petit escargot', 'D4 0.25 E4 0.25 F#4 0.5 D4 0.5 D4 0.5', '🐌', 'D 2'],
+      ['Porte sur son dos', 'D4 0.25 E4 0.25 F#4 0.5 D4 0.5 D4 1', '🐌', 'D 2.5'],
+      ['Sa maisonnette.', 'E4 1 A4 0.5 A4 0.5 F#4 1 D4 0.5', '🏠', 'A 2 D 1.5'],
+      ['Aussitôt qu\'il pleut,', 'D4 0.25 E4 0.25 F#4 0.5 D4 0.5 D4 0.5', '☔', 'D 2'],
+      ['Il est tout heureux,', 'D4 0.25 E4 0.25 F#4 0.5 D4 0.5 D4 1', '😊', 'D 2.5'],
+      ['Il sort sa tête !', 'E4 1 A4 0.5 A4 0.5 D4 1 D4 0.5 R 0.5', '🐌', 'A 2 D 2']
     ]
   },
   {
-    id: 'meunier', titre: 'Meunier, tu dors', emoji: '😴', groupe: 'fr', langue: 'fr-FR',
+    id: 'meunier', titre: 'Meunier, tu dors', emoji: '😴', groupe: 'fr', langue: 'fr-FR', tempo: 110,
     lignes: [
-      ['Meunier, tu dors,', '', '😴'],
-      ['Ton moulin, ton moulin va trop vite.', '', '💨'],
-      ['Meunier, tu dors,', '', '😴'],
-      ['Ton moulin, ton moulin va trop fort.', '', '💨'],
-      ['Ton moulin, ton moulin va trop vite,', '', '🌾'],
-      ['Ton moulin, ton moulin va trop fort !', '', '🌾']
+      ['Meunier, tu dors,', 'G4 1 C5 3 E5 1 C5 3', '😴', 'C 8'],
+      ['Ton moulin, ton moulin va trop vite.', 'B4 0.75 C5 0.25 D5 1 D5 0.75 D5 0.25 D5 1 C5 0.75 D5 0.25 E5 2 C5 1', '💨', 'G 4 C 4'],
+      ['Meunier, tu dors,', 'G4 1 C5 3 E5 1 C5 3', '😴', 'C 8'],
+      ['Ton moulin, ton moulin va trop fort.', 'B4 0.75 C5 0.25 D5 1 D5 0.75 D5 0.25 D5 1 E5 0.75 D5 0.25 C5 2', '💨', 'G 4 C 3'],
+      ['Ton moulin, ton moulin va trop vite,', 'E5 0.333 E5 0.333 E5 0.333 E5 0.333 E5 0.333 E5 0.333 E5 0.5 E5 0.5 G5 0.5 G5 0.5', '🌾', 'C 4'],
+      ['Ton moulin, ton moulin va trop fort !', 'D5 0.333 D5 0.333 D5 0.333 D5 0.333 D5 0.333 D5 0.333 G5 0.5 G5 0.5 C5 2', '🌾', 'G 3 C 2']
     ]
   },
   {
-    id: 'crocodiles', titre: 'Les crocodiles', emoji: '🐊', groupe: 'fr', langue: 'fr-FR',
+    id: 'crocodiles', titre: 'Les crocodiles', emoji: '🐊', groupe: 'fr', langue: 'fr-FR', tempo: 120,
     lignes: [
-      ['Un crocodile, s\'en allant à la guerre,', '', '🐊'],
-      ['Disait au revoir à ses petits enfants.', '', '👋'],
-      ['Traînant sa queue, sa queue dans la poussière,', '', '🐊'],
-      ['Il s\'en allait combattre les éléphants.', '', '🐘'],
-      ['Ah ! Les crocrocro, les crocrocro, les crocodiles,', '', '🐊'],
-      ['Sur les bords du Nil, ils sont partis,', '', '🌊'],
-      ['N\'en parlons plus !', '', '👋']
+      ['Un crocodile, s\'en allant à la guerre,', 'F4 1 F4 0.75 A4 0.25 C5 1.5 Bb4 0.5 A4 0.75 G4 0.25 A4 0.75 Bb4 0.25 A4 1 G4 1', '🐊', 'F 4 C 4'],
+      ['Disait au revoir à ses petits enfants.', 'G4 1 G4 0.75 A4 0.25 G4 1.5 G4 0.5 A4 0.75 G4 0.25 A4 0.75 B4 0.25 C5 2', '👋', 'C 8'],
+      ['Traînant sa queue, sa queue dans la poussière,', 'F4 1 F4 0.75 A4 0.25 C5 1.5 Bb4 0.5 A4 0.75 G4 0.25 A4 0.75 Bb4 0.25 A4 1 G4 1', '🐊', 'F 4 C 4'],
+      ['Il s\'en allait combattre les éléphants.', 'G4 1 G4 0.75 A4 0.25 G4 1.5 G4 0.5 A4 0.75 G4 0.25 A4 0.75 B4 0.25 C5 2', '🐘', 'C 8'],
+      ['Ah ! Les crocrocro, les crocrocro, les crocodiles,', 'F4 0.5 A4 0.5 A4 0.5 A4 0.5 F4 0.5 A4 0.5 A4 0.5 A4 0.5 F4 0.5 A4 0.5 A4 0.5 A4 0.5 Bb4 1 G4 1', '🐊', 'F 6 C 2'],
+      ['Sur les bords du Nil, ils sont partis,', 'E4 0.5 G4 0.5 G4 0.5 G4 0.5 E4 0.5 G4 0.5 G4 0.5 G4 0.5 C5 0.5', '🌊', 'C 4.5'],
+      ['N\'en parlons plus !', 'Bb4 0.5 A4 0.5 G4 0.5 F4 2', '👋', 'C 1.5 F 2']
     ]
   },
   {
