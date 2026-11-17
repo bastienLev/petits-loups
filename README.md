@@ -1,6 +1,6 @@
 # Petits Loups
 
-Site pour enfants (comptines, histoires, petits jeux) pensé pour un vieil **iPad 2 sous iOS 9.3.5**.
+Site pour enfants (comptines, histoires, petits jeux) pensé pour un vieil.
 
 - Tout est en HTML, CSS et JavaScript ES5, sans bibliothèque, pour rester compatible avec Safari 9.
 - Une seule page (`index.html`) : en mode « écran d'accueil », un lien classique ouvrirait Safari.
