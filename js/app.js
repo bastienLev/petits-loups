@@ -555,6 +555,44 @@
   }, 1000);
   verifier();
 
+  /* ---------- Hors connexion (Application Cache de Safari 9) ---------- */
+  var cache = window.applicationCache;
+  var majEnAttente = false;
+  var etatHorsLigne = '';
+  function majHorsLigne(t) {
+    etatHorsLigne = t;
+    var e = $('etat-hors-ligne');
+    if (e) { e.textContent = t; }
+  }
+  if (cache && cache.addEventListener) {
+    if (cache.status === 1) { majHorsLigne('Hors connexion : prêt ✓'); }
+    cache.addEventListener('downloading', function () { majHorsLigne('Hors connexion : téléchargement…'); }, false);
+    cache.addEventListener('progress', function (e) {
+      if (e.total) { majHorsLigne('Hors connexion : téléchargement ' + e.loaded + ' / ' + e.total); }
+    }, false);
+    cache.addEventListener('cached', function () { majHorsLigne('Hors connexion : prêt ✓'); }, false);
+    cache.addEventListener('noupdate', function () { majHorsLigne('Hors connexion : prêt ✓'); }, false);
+    cache.addEventListener('error', function () {
+      if (!etatHorsLigne) { majHorsLigne('Hors connexion : pas disponible pour l\'instant.'); }
+    }, false);
+    // Une nouvelle version a été téléchargée : on l'installe dès qu'on revient à l'accueil.
+    cache.addEventListener('updateready', function () {
+      try { cache.swapCache(); } catch (e) {}
+      majHorsLigne('Hors connexion : prêt ✓ (nouvelle version)');
+      majEnAttente = true;
+      rechargerSiPossible();
+    }, false);
+  } else {
+    majHorsLigne('Hors connexion : non pris en charge par ce navigateur.');
+  }
+  function rechargerSiPossible() {
+    if (majEnAttente && historique.length === 1 && !finVisible() &&
+        $('panneau-parent').className.indexOf('visible') < 0) {
+      window.location.reload();
+    }
+  }
+  setInterval(rechargerSiPossible, 5000);
+
   // Accès pour les tests.
   window.PetitsLoups = { note: note, preparerAudio: preparerAudio, maintenant: function () { return audio ? audio.currentTime : 0; }, aller: aller, ouvrirListe: ouvrirListe, ouvrirChanson: ouvrirChanson, ouvrirHistoire: ouvrirHistoire, arreterTousLesSons: arreterTousLesSons };
 })();

@@ -167,3 +167,6 @@ body.nuit #bouton-parent { background: rgba(255,255,255,0.15); }
 }
 @-webkit-keyframes saute { 0% { -webkit-transform: scale(0.3); } 70% { -webkit-transform: scale(1.1); } 100% { -webkit-transform: scale(1); } }
 @keyframes saute { 0% { transform: scale(0.3); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+.hors-ligne { font-size: 18px !important; color: #2b8a3e; }
+.astuce { font-size: 16px !important; color: #868e96; line-height: 1.35; margin: 14px 10px 0 !important; }

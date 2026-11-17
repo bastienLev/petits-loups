@@ -19,6 +19,12 @@ Site pour enfants (comptines, histoires, petits jeux) pensé pour un vieil.
 
 Dans `js/jeux.js` : Memory (3, 4 puis 6 paires), Les ombres (glisser chaque objet sur son ombre), Les couleurs (ranger les formes dans le panier de la même couleur), Le chemin (guider l'abeille jusqu'à la fleur avec le doigt). Chaque réussite affiche « Bravo ! » et la manche suivante est un peu plus difficile.
 
+## Hors connexion et mises à jour (étape 4)
+
+- `petits-loups.appcache` liste les fichiers que l'iPad garde pour marcher sans internet (Safari 9 ne connaît que l'« Application Cache »).
+- **Après chaque modification du site, relancer** `python outils/manifeste.py` : la version change et l'iPad télécharge la nouvelle version tout seul, puis l'installe au retour à l'accueil.
+- L'état « Hors connexion : prêt ✓ » s'affiche dans l'espace parent.
+
 ## Installer sur l'iPad
 
 1. Ouvrir l'adresse du site dans Safari.
