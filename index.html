@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Petits Loups">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Petits Loups</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ACCUEIL -->
+<section id="vue-accueil" class="vue active">
+  <h1 class="titre">Petits Loups</h1>
+  <div class="choix">
+    <button class="grosse-tuile tuile-petit" data-aller="petit">
+      <span class="emoji">🐣</span>
+      <span class="libelle">Petit</span>
+    </button>
+    <button class="grosse-tuile tuile-grand" data-aller="grand">
+      <span class="emoji">🚀</span>
+      <span class="libelle">Grand</span>
+    </button>
+  </div>
+</section>
+
+<!-- ESPACE PETIT (1 an et demi) -->
+<section id="vue-petit" class="vue">
+  <div class="barre">
+    <button class="retour" data-aller="accueil">🏠</button>
+    <h2>Petit</h2>
+  </div>
+  <div class="tuiles">
+    <button class="tuile" data-aller="piano">
+      <span class="emoji">🎹</span><span class="libelle">Piano</span>
+    </button>
+    <button class="tuile bientot">
+      <span class="emoji">🎵</span><span class="libelle">Comptines</span>
+    </button>
+    <button class="tuile bientot">
+      <span class="emoji">🐻</span><span class="libelle">Animaux</span>
+    </button>
+  </div>
+</section>
+
+<!-- ESPACE GRAND (3 ans et demi) -->
+<section id="vue-grand" class="vue">
+  <div class="barre">
+    <button class="retour" data-aller="accueil">🏠</button>
+    <h2>Grand</h2>
+  </div>
+  <div class="tuiles">
+    <button class="tuile bientot">
+      <span class="emoji">📖</span><span class="libelle">Histoires</span>
+    </button>
+    <button class="tuile bientot">
+      <span class="emoji">🎨</span><span class="libelle">Jeux</span>
+    </button>
+    <button class="tuile bientot">
+      <span class="emoji">🌙</span><span class="libelle">Dodo</span>
+    </button>
+    <button class="tuile" data-aller="piano">
+      <span class="emoji">🎹</span><span class="libelle">Piano</span>
+    </button>
+  </div>
+</section>
+
+<!-- PIANO DES COULEURS (sert aussi à tester le son) -->
+<section id="vue-piano" class="vue">
+  <div class="barre">
+    <button class="retour" data-retour="1">⬅️</button>
+    <h2>Piano</h2>
+  </div>
+  <div class="piano">
+    <button class="touche" data-note="0" style="background:#ff6b6b"></button>
+    <button class="touche" data-note="1" style="background:#ffa94d"></button>
+    <button class="touche" data-note="2" style="background:#ffd43b"></button>
+    <button class="touche" data-note="3" style="background:#69db7c"></button>
+    <button class="touche" data-note="4" style="background:#4dabf7"></button>
+    <button class="touche" data-note="5" style="background:#9775fa"></button>
+    <button class="touche" data-note="6" style="background:#f783ac"></button>
+  </div>
+</section>
+
+<!-- Bouton parent : appui long 3 secondes -->
+<button id="bouton-parent" aria-label="Espace parent">
+  <span class="cadenas">🔒</span>
+  <span class="jauge"></span>
+</button>
+<div id="reste" class="reste"></div>
+
+<!-- ESPACE PARENT -->
+<div id="panneau-parent" class="couche">
+  <div class="boite">
+    <h2>Espace parent</h2>
+    <p class="etat" id="etat-minuteur">Pas de limite de temps.</p>
+    <p>Arrêter tout dans :</p>
+    <div class="durees">
+      <button data-minutes="10">10 min</button>
+      <button data-minutes="20">20 min</button>
+      <button data-minutes="30">30 min</button>
+      <button data-minutes="45">45 min</button>
+      <button data-minutes="0" class="sans">Sans limite</button>
+    </div>
+    <button id="fermer-parent" class="fermer">Fermer</button>
+  </div>
+</div>
+
+<!-- ÉCRAN DE FIN DU MINUTEUR -->
+<div id="ecran-fin" class="couche fin">
+  <div class="fin-contenu">
+    <div class="lune">🌙</div>
+    <p class="fin-titre">C'est fini pour aujourd'hui !</p>
+    <p class="fin-sous-titre">Bravo, à bientôt ⭐</p>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
