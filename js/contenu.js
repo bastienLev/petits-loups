@@ -11,7 +11,7 @@
 var CONTENU = {};
 
 // true quand les fichiers audio/ (voix naturelles) sont présents.
-CONTENU.voixEnregistrees = false;
+CONTENU.voixEnregistrees = true;
 
 CONTENU.chansons = [
   /* ----- Comptines françaises ----- */
