@@ -407,8 +407,8 @@
       texte('histoire-titre', h.titre);
       montrerPage();
     }, function () {
-      // En mode Dodo, l'histoire se lit toute seule jusqu'au bout.
-      if (modeNuit) { lectureAuto = true; lirePage(); }
+      // L'histoire se lit toute seule jusqu'au bout (le bouton ⏸ met en pause).
+      lectureAuto = true; lirePage();
     });
   }
 
