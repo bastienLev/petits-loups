@@ -8,6 +8,7 @@
   /* ---------- Petits utilitaires ---------- */
   function $(id) { return document.getElementById(id); }
   function tous(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function texte(id, t) { $(id).textContent = t; }
 
   // localStorage peut lever une erreur en navigation privée sur iOS 9.
   var memoireSecours = {};
@@ -25,37 +26,13 @@
   // Empêche le zoom / défilement élastique de la page entière.
   document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
 
-  /* ---------- Navigation entre les vues ---------- */
-  // Une seule page : en mode « écran d'accueil », un lien classique ouvrirait Safari.
-  var historique = ['accueil'];
-  function afficher(nom) {
-    tous('.vue').forEach(function (v) { v.className = 'vue'; });
-    var vue = $('vue-' + nom);
-    if (vue) { vue.className = 'vue active'; }
-  }
-  function aller(nom) {
-    if (nom === 'accueil') { historique = ['accueil']; }
-    else { historique.push(nom); }
-    afficher(nom);
-  }
-  function retour() {
-    if (historique.length > 1) { historique.pop(); }
-    afficher(historique[historique.length - 1]);
-  }
-  document.addEventListener('click', function (e) {
-    var el = e.target;
-    while (el && el !== document) {
-      if (el.getAttribute && el.getAttribute('data-aller')) { aller(el.getAttribute('data-aller')); return; }
-      if (el.getAttribute && el.getAttribute('data-retour')) { retour(); return; }
-      el = el.parentNode;
-    }
-  }, false);
-
   /* ---------- Son (Web Audio, préfixé webkit sur iOS 9) ---------- */
   var AudioCtx = window.AudioContext || window.webkitAudioContext;
   var audio = null;
   var sonsActifs = [];
+  var minuteriesSon = [];   // setTimeout liés à la lecture en cours
   var sonCoupe = false;
+  var lecture = 0;          // change à chaque arrêt : les rappels périmés s'ignorent
 
   function preparerAudio() {
     if (audio || !AudioCtx) { return; }
@@ -70,44 +47,297 @@
   document.addEventListener('touchend', preparerAudio, false);
   document.addEventListener('mousedown', preparerAudio, false);
 
-  // Gamme douce (do majeur, pentatonique + do aigu)
-  var NOTES = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
+  function plusTard(fn, ms) {
+    var id = setTimeout(fn, ms);
+    minuteriesSon.push(id);
+    return id;
+  }
 
-  function jouerNote(freq) {
+  // Une note de boîte à musique : son doux qui s'éteint tout seul.
+  function note(freq, quand, duree, volume) {
     if (!audio || sonCoupe) { return; }
-    var t = audio.currentTime;
-    var osc = audio.createOscillator();
-    var gain = audio.createGain ? audio.createGain() : audio.createGainNode();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
-    osc.connect(gain);
-    gain.connect(audio.destination);
-    if (osc.start) { osc.start(t); osc.stop(t + 1.25); }
-    else { osc.noteOn(t); osc.noteOff(t + 1.25); }
-    sonsActifs.push(osc);
-    osc.onended = function () {
-      var i = sonsActifs.indexOf(osc);
-      if (i >= 0) { sonsActifs.splice(i, 1); }
-    };
+    var t = quand || audio.currentTime;
+    var fin = t + Math.max(duree, 0.6) + 0.8;
+    [[1, volume || 0.35], [2, (volume || 0.35) * 0.25]].forEach(function (h) {
+      var osc = audio.createOscillator();
+      var gain = audio.createGain ? audio.createGain() : audio.createGainNode();
+      osc.type = 'sine';
+      osc.frequency.value = freq * h[0];
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(h[1], t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, fin);
+      osc.connect(gain);
+      gain.connect(audio.destination);
+      if (osc.start) { osc.start(t); osc.stop(fin + 0.05); }
+      else { osc.noteOn(t); osc.noteOff(fin + 0.05); }
+      sonsActifs.push(osc);
+      osc.onended = function () {
+        var i = sonsActifs.indexOf(osc);
+        if (i >= 0) { sonsActifs.splice(i, 1); }
+      };
+    });
+  }
+
+  var NOMS = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  function frequence(nom) {
+    var m = /^([A-G])(#|b)?(\d)$/.exec(nom);
+    if (!m) { return 0; }
+    var midi = 12 * (parseInt(m[3], 10) + 1) + NOMS[m[1]] + (m[2] === '#' ? 1 : (m[2] === 'b' ? -1 : 0));
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+  // "C4 1 D4 0.5" -> [{f: 261.6, d: 1}, {f: 293.7, d: 0.5}]
+  function lireMelodie(txt) {
+    var morceaux = (txt || '').split(/\s+/), notes = [], i;
+    for (i = 0; i + 1 < morceaux.length; i += 2) {
+      notes.push({ f: frequence(morceaux[i]), d: parseFloat(morceaux[i + 1]) });
+    }
+    return notes;
+  }
+
+  /* ---------- Voix de l'iPad (synthèse vocale) ---------- */
+  var synthese = window.speechSynthesis;
+  var phraseEnCours = null; // garder une référence : sinon iOS peut oublier le « fini »
+
+  function choisirVoix(langue) {
+    if (!synthese || !synthese.getVoices) { return null; }
+    var voix = synthese.getVoices(), i, prefixe = langue.slice(0, 2);
+    for (i = 0; i < voix.length; i++) { if (voix[i].lang && voix[i].lang.replace('_', '-') === langue) { return voix[i]; } }
+    for (i = 0; i < voix.length; i++) { if (voix[i].lang && voix[i].lang.indexOf(prefixe) === 0) { return voix[i]; } }
+    return null;
+  }
+
+  // Lit un texte puis appelle « ensuite » (une seule fois, même si iOS se trompe).
+  function parler(phrase, langue, vitesse, ensuite) {
+    var maLecture = lecture, fait = false;
+    function fini() {
+      if (fait || maLecture !== lecture) { return; }
+      fait = true;
+      if (ensuite) { ensuite(); }
+    }
+    // Filet de sécurité si l'événement de fin n'arrive jamais.
+    plusTard(fini, 2500 + phrase.length * 110 / vitesse);
+    if (!synthese || sonCoupe) { return; }
+    var u = new window.SpeechSynthesisUtterance(phrase);
+    u.lang = langue;
+    u.rate = vitesse;
+    var v = choisirVoix(langue);
+    if (v) { u.voice = v; }
+    u.onend = fini;
+    phraseEnCours = u;
+    synthese.speak(u);
   }
 
   function arreterTousLesSons() {
+    lecture++;
+    minuteriesSon.forEach(function (id) { clearTimeout(id); });
+    minuteriesSon = [];
     sonsActifs.forEach(function (o) {
       try { if (o.stop) { o.stop(0); } else { o.noteOff(0); } } catch (e) {}
     });
     sonsActifs = [];
-    tous('audio, video').forEach(function (m) { try { m.pause(); } catch (e) {} });
+    if (synthese) { try { synthese.cancel(); } catch (e) {} }
+    phraseEnCours = null;
+    tous('audio').forEach(function (m) { try { m.pause(); } catch (e) {} });
   }
 
+  /* ---------- Navigation entre les vues ---------- */
+  // Une seule page : en mode « écran d'accueil », un lien classique ouvrirait Safari.
+  var historique = [{ vue: 'accueil' }];
+  var modeNuit = false;
+
+  function afficher(etape) {
+    arreterTousLesSons();
+    tous('.vue').forEach(function (v) { v.className = 'vue'; });
+    if (etape.preparer) { etape.preparer(); }
+    var vue = $('vue-' + etape.vue);
+    if (vue) { vue.className = 'vue active'; }
+    // Le mode nuit reste actif tant qu'on est « dans » le Dodo.
+    modeNuit = false;
+    historique.forEach(function (h) { if (h.nuit) { modeNuit = true; } });
+    document.body.className = modeNuit ? 'nuit' : '';
+    if (etape.lancer) { etape.lancer(); }
+  }
+  function aller(nom, preparer, lancer, nuit) {
+    var etape = { vue: nom, preparer: preparer, lancer: lancer, nuit: nuit };
+    if (nom === 'accueil') { historique = [etape]; }
+    else { historique.push(etape); }
+    afficher(etape);
+  }
+  function retour() {
+    if (historique.length > 1) { historique.pop(); }
+    var etape = historique[historique.length - 1];
+    afficher({ vue: etape.vue, preparer: etape.preparer });
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target, a;
+    while (el && el !== document) {
+      if (el.getAttribute) {
+        if ((a = el.getAttribute('data-aller'))) { aller(a); return; }
+        if (el.getAttribute('data-retour')) { retour(); return; }
+        if ((a = el.getAttribute('data-liste'))) { ouvrirListe(a); return; }
+        if ((a = el.getAttribute('data-chanson'))) { ouvrirChanson(a); return; }
+        if ((a = el.getAttribute('data-histoire'))) { ouvrirHistoire(a); return; }
+      }
+      el = el.parentNode;
+    }
+  }, false);
+
+  /* ---------- Listes ---------- */
+  var LISTES = {
+    fr: { titre: 'Comptines', nuit: false },
+    noel: { titre: 'Noël', nuit: false },
+    histoires: { titre: 'Histoires', nuit: false },
+    dodo: { titre: 'Dodo', nuit: true }
+  };
+
+  function tuile(attr, id, emoji, titre) {
+    return '<button class="tuile carte" ' + attr + '="' + id + '">' +
+      '<span class="emoji">' + emoji + '</span><span class="libelle">' + titre + '</span></button>';
+  }
+
+  function ouvrirListe(nom) {
+    var def = LISTES[nom];
+    aller('liste', function () {
+      var html = '';
+      texte('liste-titre', def.titre);
+      if (nom === 'histoires' || nom === 'dodo') {
+        CONTENU.histoires.forEach(function (h) { html += tuile('data-histoire', h.id, h.emoji, h.titre); });
+      }
+      CONTENU.chansons.forEach(function (c) {
+        if ((nom === 'dodo' && c.dodo) || c.groupe === nom) { html += tuile('data-chanson', c.id, c.emoji, c.titre); }
+      });
+      $('liste-tuiles').innerHTML = html;
+    }, null, def.nuit);
+  }
+
+  function trouver(liste, id) {
+    for (var i = 0; i < liste.length; i++) { if (liste[i].id === id) { return liste[i]; } }
+    return null;
+  }
+
+  /* ---------- Lecteur de chanson ---------- */
+  var chansonCourante = null;
+
+  function montrerLigne(c, i) {
+    var l = c.lignes[i], s = c.lignes[i + 1];
+    texte('chanson-ligne', l ? l[0] : '');
+    texte('chanson-suivante', s ? s[0] : '');
+    texte('chanson-image', (l && l[2]) || c.emoji);
+  }
+
+  function ouvrirChanson(id) {
+    var c = trouver(CONTENU.chansons, id);
+    if (!c) { return; }
+    aller('chanson', function () {
+      chansonCourante = c;
+      texte('chanson-titre', c.titre);
+      montrerLigne(c, 0);
+    }, function () { jouerChanson(c); });
+  }
+
+  function chansonTerminee() {
+    if (modeNuit) { plusTard(function () { bonneNuit(); }, 1500); }
+  }
+
+  function jouerChanson(c) {
+    arreterTousLesSons();
+    preparerAudio();
+    montrerLigne(c, 0);
+    var aMelodie = c.lignes[0][1] !== '';
+    if (!aMelodie) {
+      // Pas de mélodie : l'iPad dit les paroles, une ligne après l'autre.
+      var vitesse = modeNuit ? 0.75 : 0.85;
+      var suivante = function (i) {
+        if (i >= c.lignes.length) { chansonTerminee(); return; }
+        montrerLigne(c, i);
+        parler(c.lignes[i][0], c.langue, vitesse, function () { plusTard(function () { suivante(i + 1); }, 400); });
+      };
+      suivante(0);
+      return;
+    }
+    if (!audio) { return; }
+    var temps = 60 / ((c.tempo || 110) * (modeNuit ? 0.85 : 1));
+    var debut = audio.currentTime + 0.15, t = debut;
+    c.lignes.forEach(function (ligne, i) {
+      var depart = t;
+      plusTard(function () { montrerLigne(c, i); }, (depart - audio.currentTime) * 1000);
+      lireMelodie(ligne[1]).forEach(function (n) {
+        note(n.f, t, n.d * temps, modeNuit ? 0.22 : 0.35);
+        t += n.d * temps;
+      });
+    });
+    plusTard(chansonTerminee, (t - audio.currentTime) * 1000 + 800);
+  }
+  $('chanson-rejouer').addEventListener('click', function () {
+    if (chansonCourante) { jouerChanson(chansonCourante); }
+  }, false);
+
+  /* ---------- Lecteur d'histoire ---------- */
+  var histoireCourante = null, pageCourante = 0, lectureAuto = false;
+
+  function montrerPage() {
+    var h = histoireCourante, p = h.pages[pageCourante];
+    texte('histoire-image', p[0]);
+    texte('histoire-texte', p[1]);
+    texte('histoire-numero', (pageCourante + 1) + ' / ' + h.pages.length);
+    $('histoire-prec').className = 'gros-bouton' + (pageCourante === 0 ? ' inactif' : '');
+    $('histoire-suiv').className = 'gros-bouton' + (pageCourante === h.pages.length - 1 ? ' inactif' : '');
+    $('histoire-lire').innerHTML = lectureAuto ? '⏸' : '🔊';
+  }
+
+  function lirePage() {
+    var h = histoireCourante;
+    arreterTousLesSons();
+    montrerPage();
+    parler(h.pages[pageCourante][1], 'fr-FR', modeNuit ? 0.75 : 0.9, function () {
+      if (!lectureAuto) { return; }
+      if (pageCourante < h.pages.length - 1) {
+        plusTard(function () { pageCourante++; lirePage(); }, modeNuit ? 2000 : 1200);
+      } else {
+        lectureAuto = false;
+        montrerPage();
+        if (modeNuit) { plusTard(bonneNuit, 2000); }
+      }
+    });
+  }
+
+  function ouvrirHistoire(id) {
+    var h = trouver(CONTENU.histoires, id);
+    if (!h) { return; }
+    aller('histoire', function () {
+      histoireCourante = h;
+      pageCourante = 0;
+      lectureAuto = false;
+      texte('histoire-titre', h.titre);
+      montrerPage();
+    }, function () {
+      // En mode Dodo, l'histoire se lit toute seule jusqu'au bout.
+      if (modeNuit) { lectureAuto = true; lirePage(); }
+    });
+  }
+
+  $('histoire-lire').addEventListener('click', function () {
+    lectureAuto = !lectureAuto;
+    if (lectureAuto) { lirePage(); } else { arreterTousLesSons(); montrerPage(); }
+  }, false);
+  $('histoire-prec').addEventListener('click', function () {
+    if (pageCourante > 0) { pageCourante--; if (lectureAuto) { lirePage(); } else { arreterTousLesSons(); montrerPage(); } }
+  }, false);
+  $('histoire-suiv').addEventListener('click', function () {
+    if (pageCourante < histoireCourante.pages.length - 1) {
+      pageCourante++;
+      if (lectureAuto) { lirePage(); } else { arreterTousLesSons(); montrerPage(); }
+    }
+  }, false);
+
   /* ---------- Piano des couleurs ---------- */
+  var GAMME = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33];
   tous('.touche').forEach(function (touche) {
     function appuyer(e) {
       e.preventDefault();
       preparerAudio();
-      jouerNote(NOTES[parseInt(touche.getAttribute('data-note'), 10)]);
+      note(GAMME[parseInt(touche.getAttribute('data-note'), 10)], 0, 0.6, 0.4);
       touche.className = 'touche joue';
       setTimeout(function () { touche.className = 'touche'; }, 180);
     }
@@ -145,7 +375,29 @@
   function fermerParent() {
     $('panneau-parent').className = 'couche';
   }
-  $('fermer-parent').addEventListener('click', fermerParent, false);
+  $('fermer-parent').addEventListener('click', function () {
+    fermerParent();
+    // L'écran « Bonne nuit » se ferme ; celui du minuteur reste tant que le temps est écoulé.
+    if (!tempsEcoule()) { cacherFin(); }
+  }, false);
+
+  /* ---------- Écran de fin (minuteur ou « Bonne nuit ») ---------- */
+  function montrerFin(titre, sousTitre) {
+    arreterTousLesSons();
+    sonCoupe = true;
+    texte('fin-titre', titre);
+    texte('fin-sous-titre', sousTitre);
+    $('ecran-fin').className = 'couche fin visible';
+  }
+  function cacherFin() {
+    sonCoupe = false;
+    $('ecran-fin').className = 'couche fin';
+  }
+  function finVisible() { return $('ecran-fin').className.indexOf('visible') >= 0; }
+
+  function bonneNuit() {
+    montrerFin('Bonne nuit…', 'Fais de beaux rêves ⭐');
+  }
 
   /* ---------- Minuteur : tout s'arrête quand le temps est écoulé ---------- */
   var CLE_FIN = 'petitsLoups.finMinuteur';
@@ -154,14 +406,17 @@
     var v = parseInt(lire(CLE_FIN), 10);
     return isNaN(v) ? 0 : v;
   }
+  function tempsEcoule() {
+    var fin = finMinuteur();
+    return fin > 0 && fin <= Date.now();
+  }
 
   tous('.durees button').forEach(function (b) {
     b.addEventListener('click', function () {
       var minutes = parseInt(b.getAttribute('data-minutes'), 10);
       if (minutes > 0) { ecrire(CLE_FIN, String(Date.now() + minutes * 60000)); }
       else { ecrire(CLE_FIN, null); }
-      sonCoupe = false;
-      $('ecran-fin').className = 'couche fin';
+      cacherFin();
       fermerParent();
       verifier();
     }, false);
@@ -177,26 +432,24 @@
   function majEtat() {
     var fin = finMinuteur();
     var etat = $('etat-minuteur');
-    if (!fin) { etat.innerHTML = 'Pas de limite de temps.'; }
-    else if (fin <= Date.now()) { etat.innerHTML = 'Le temps est écoulé. Choisis une nouvelle durée pour relancer.'; }
-    else { etat.innerHTML = 'Temps restant : ' + formater(fin - Date.now()); }
+    if (!fin) { etat.textContent = 'Pas de limite de temps.'; }
+    else if (fin <= Date.now()) { etat.textContent = 'Le temps est écoulé. Choisis une nouvelle durée pour relancer.'; }
+    else { etat.textContent = 'Temps restant : ' + formater(fin - Date.now()); }
   }
 
   function verifier() {
     var fin = finMinuteur();
     var reste = $('reste');
-    if (!fin) { reste.innerHTML = ''; return; }
+    if (!fin) { reste.textContent = ''; return; }
     var restant = fin - Date.now();
     if (restant > 0) {
-      reste.innerHTML = formater(restant);
+      reste.textContent = formater(restant);
       return;
     }
-    reste.innerHTML = '';
-    if ($('ecran-fin').className.indexOf('visible') < 0) {
-      arreterTousLesSons();
-      sonCoupe = true;
-      $('ecran-fin').className = 'couche fin visible';
+    reste.textContent = '';
+    if (!finVisible()) {
       aller('accueil');
+      montrerFin('C\'est fini pour aujourd\'hui !', 'Bravo, à bientôt ⭐');
     }
   }
 
@@ -206,6 +459,6 @@
   }, 1000);
   verifier();
 
-  // Petit accès pour les tests et les prochaines étapes.
-  window.PetitsLoups = { aller: aller, jouerNote: jouerNote, arreterTousLesSons: arreterTousLesSons };
+  // Accès pour les tests.
+  window.PetitsLoups = { aller: aller, ouvrirListe: ouvrirListe, ouvrirChanson: ouvrirChanson, ouvrirHistoire: ouvrirHistoire, arreterTousLesSons: arreterTousLesSons };
 })();

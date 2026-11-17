@@ -106,3 +106,27 @@ button {
 .lune { font-size: 160px; }
 .fin-titre { font-size: 48px; margin: 20px 0 10px; }
 .fin-sous-titre { font-size: 32px; margin: 0; color: #c5c3e6; }
+
+/* Listes de chansons / histoires */
+.tuile.carte .libelle { font-size: 22px; padding: 0 10px; line-height: 1.2; }
+.tuile.carte .emoji { font-size: 90px; line-height: 140px; }
+
+/* Lecteurs */
+.scene { font-size: 150px; line-height: 200px; margin-top: 10px; white-space: nowrap; }
+.ligne-courante { font-size: 40px; font-weight: bold; margin: 10px 30px; min-height: 100px; }
+.ligne-suivante { font-size: 26px; opacity: 0.5; margin: 0 30px 20px; min-height: 34px; }
+.texte-histoire { font-size: 32px; line-height: 1.35; margin: 0 50px; min-height: 175px; }
+.gros-bouton {
+  width: 110px; height: 110px; border-radius: 55px; font-size: 54px;
+  background: #fff; box-shadow: 0 6px 0 rgba(0,0,0,0.12); margin: 0 18px;
+}
+.gros-bouton:active { -webkit-transform: scale(0.93); transform: scale(0.93); }
+.gros-bouton.inactif { opacity: 0.3; }
+.commandes { margin-top: 10px; }
+.numero { font-size: 18px; opacity: 0.5; margin: 8px 0 0; }
+
+/* Mode nuit (Dodo) */
+body.nuit { background: #1c1b3a; color: #e5dbff; }
+body.nuit .tuile, body.nuit .retour, body.nuit .gros-bouton { background: #2e2b5c; box-shadow: 0 6px 0 rgba(0,0,0,0.35); }
+body.nuit .scene { opacity: 0.85; }
+body.nuit #bouton-parent { background: rgba(255,255,255,0.15); }

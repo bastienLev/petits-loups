@@ -7,6 +7,14 @@ Site pour enfants (comptines, histoires, petits jeux) pensé pour un vieil **iPa
 - **Espace parent** : appui long de 3 secondes sur le cadenas en haut à droite.
 - **Minuteur** : choisi dans l'espace parent. À la fin, tous les sons s'arrêtent et un écran « C'est fini » s'affiche jusqu'à ce qu'un parent relance.
 
+## Contenu (étape 2)
+
+- **Comptines** (Petit) : Petit escargot, Meunier tu dors, Les crocodiles (paroles lues par la voix de l'iPad), Frère Jacques et Au clair de la lune (boîte à musique).
+- **Noël** : Jingle Bells, We Wish You a Merry Christmas, Deck the Halls, Silent Night, Twinkle Twinkle (boîte à musique, paroles en anglais).
+- **Histoires** (Grand) : les trois petits cochons, le Petit Chaperon rouge (version douce), Boucle d'or, Cendrillon. Bouton 🔊 pour la lecture à voix haute.
+- **Dodo** : écran sombre, voix et musique plus lentes, l'histoire se lit toute seule puis un écran « Bonne nuit » s'affiche (le parent le ferme avec le cadenas).
+- Tout le contenu est dans `js/contenu.js`.
+
 ## Installer sur l'iPad
 
 1. Ouvrir l'adresse du site dans Safari.

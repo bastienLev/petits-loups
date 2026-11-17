@@ -37,11 +37,11 @@
     <button class="tuile" data-aller="piano">
       <span class="emoji">🎹</span><span class="libelle">Piano</span>
     </button>
-    <button class="tuile bientot">
+    <button class="tuile" data-liste="fr">
       <span class="emoji">🎵</span><span class="libelle">Comptines</span>
     </button>
-    <button class="tuile bientot">
-      <span class="emoji">🐻</span><span class="libelle">Animaux</span>
+    <button class="tuile" data-liste="noel">
+      <span class="emoji">🎄</span><span class="libelle">Noël</span>
     </button>
   </div>
 </section>
@@ -53,14 +53,17 @@
     <h2>Grand</h2>
   </div>
   <div class="tuiles">
-    <button class="tuile bientot">
+    <button class="tuile" data-liste="histoires">
       <span class="emoji">📖</span><span class="libelle">Histoires</span>
     </button>
     <button class="tuile bientot">
       <span class="emoji">🎨</span><span class="libelle">Jeux</span>
     </button>
-    <button class="tuile bientot">
+    <button class="tuile" data-liste="dodo">
       <span class="emoji">🌙</span><span class="libelle">Dodo</span>
+    </button>
+    <button class="tuile" data-liste="noel">
+      <span class="emoji">🎄</span><span class="libelle">Noël</span>
     </button>
     <button class="tuile" data-aller="piano">
       <span class="emoji">🎹</span><span class="libelle">Piano</span>
@@ -83,6 +86,44 @@
     <button class="touche" data-note="5" style="background:#9775fa"></button>
     <button class="touche" data-note="6" style="background:#f783ac"></button>
   </div>
+</section>
+
+
+<!-- LISTE (comptines, Noël, histoires, dodo) : remplie par app.js -->
+<section id="vue-liste" class="vue">
+  <div class="barre">
+    <button class="retour" data-retour="1">⬅️</button>
+    <h2 id="liste-titre"></h2>
+  </div>
+  <div class="tuiles" id="liste-tuiles"></div>
+</section>
+
+<!-- LECTEUR DE CHANSON -->
+<section id="vue-chanson" class="vue">
+  <div class="barre">
+    <button class="retour" data-retour="1">⬅️</button>
+    <h2 id="chanson-titre"></h2>
+  </div>
+  <div class="scene" id="chanson-image"></div>
+  <p class="ligne-courante" id="chanson-ligne"></p>
+  <p class="ligne-suivante" id="chanson-suivante"></p>
+  <button class="gros-bouton" id="chanson-rejouer">▶️</button>
+</section>
+
+<!-- LECTEUR D'HISTOIRE -->
+<section id="vue-histoire" class="vue">
+  <div class="barre">
+    <button class="retour" data-retour="1">⬅️</button>
+    <h2 id="histoire-titre"></h2>
+  </div>
+  <div class="scene" id="histoire-image"></div>
+  <p class="texte-histoire" id="histoire-texte"></p>
+  <div class="commandes">
+    <button class="gros-bouton" id="histoire-prec">◀️</button>
+    <button class="gros-bouton" id="histoire-lire">🔊</button>
+    <button class="gros-bouton" id="histoire-suiv">▶️</button>
+  </div>
+  <p class="numero" id="histoire-numero"></p>
 </section>
 
 <!-- Bouton parent : appui long 3 secondes -->
@@ -113,11 +154,12 @@
 <div id="ecran-fin" class="couche fin">
   <div class="fin-contenu">
     <div class="lune">🌙</div>
-    <p class="fin-titre">C'est fini pour aujourd'hui !</p>
-    <p class="fin-sous-titre">Bravo, à bientôt ⭐</p>
+    <p class="fin-titre" id="fin-titre">C'est fini pour aujourd'hui !</p>
+    <p class="fin-sous-titre" id="fin-sous-titre">Bravo, à bientôt ⭐</p>
   </div>
 </div>
 
+<script src="js/contenu.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
